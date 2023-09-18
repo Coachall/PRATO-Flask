@@ -8,20 +8,23 @@ from io import BytesIO
 import requests
 
 app = Flask(__name__)
+
+# create a function to decode the base64 encoded file
 def decode_file(file):
     return base64.b64decode(file)
 
+# create a requests session
 api_session = requests.Session()
 
+# create a function to refresh the token
 def refresh_token(request):
-    
     client_id = os.getenv("CLIENT_ID")
     client_secret = os.getenv("CLIENT_SECRET")
     grant_type = "refresh_token"
     session = Session()
-    print(request.request.headers.get('Authorization'))
-    # remove Bearer from the token
     token = request.request.headers.get('User')
+    
+    # get user from db
     user = session.query(User).filter_by(user_id=token).first()
 
     payload = {
@@ -31,15 +34,20 @@ def refresh_token(request):
         "grant_type": grant_type
     }
 
+    # get new token
     r = requests.post("https://focus.teamleader.eu/oauth2/access_token", data=payload)
+    # update user with new tokens
     user.refresh_token = r.json().get('refresh_token')
     user.access_token = r.json().get('access_token')
+
+    # commit changes
     session.commit()
 
     session.close() 
 
     return r.json().get('access_token')
 
+# create a function to catch invalid tokens
 def catch_invalid_token(r, *args, **kwargs):
     if r.status_code == 401:
         print("Fetching new token as the previous token expired")
@@ -49,7 +57,9 @@ def catch_invalid_token(r, *args, **kwargs):
         r.request.headers["Authorization"] = api_session.headers["Authorization"]
         return api_session.send(r.request, verify=False)
 
+# add the function to the list of hooks
 api_session.hooks['response'].append(catch_invalid_token)
+
 
 @app.route('/', methods=['POST'])
 def index():
@@ -88,6 +98,7 @@ def index():
         session.close()
         return jsonify({"404": "Not found"})
 
+# create a route for the initial authorization with Teamleader
 @app.route('/authorize', methods=['GET'])
 def authorize():
     code = request.args.get('code')
