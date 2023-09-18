@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, jsonify, request
 import os
 import base64
@@ -6,6 +7,8 @@ from db.session import Session
 from db.users import User
 from io import BytesIO
 import requests
+from datetime import datetime
+
 
 app = Flask(__name__)
 
@@ -23,7 +26,7 @@ def refresh_token(request):
     grant_type = "refresh_token"
     session = Session()
     token = request.request.headers.get('User')
-    
+
     # get user from db
     user = session.query(User).filter_by(user_id=token).first()
 
@@ -88,7 +91,42 @@ def index():
         excel = pandas.read_excel(BytesIO(decoded_excel))
 
         excel_dict = excel.to_dict(orient='records')
-        print(excel_dict) 
+       
+        for row in excel_dict:
+            id = row.get('KlantID')
+            naam = row.get('Kl_Naam')
+            voornaam = row.get('Kl_Voornaam')
+            email = row.get('KL_Email')
+            gsm = str(row.get('KL_GSM'))
+            straat = row.get('Straat')
+            postcode = row.get('Postcode')
+            gemeente = row.get('GemeenteNaam')
+            van = row.get('Van')
+            tot = row.get('Tot')
+
+            print(van, tot)
+            # check if the first two characters of gsm are '32' and replace them with '0'
+
+            if gsm[:2] == '32':
+                gsm = '0' + gsm[2:]
+                
+            # check if the customer already exists
+            if email == 'geen@schoonmaakzorg.be':
+                customer = api_session.post('https://api.focus.teamleader.eu/contacts.add', json = { 'first_name': voornaam, 'last_name': naam, 'emails': [{'type': 'primary', 'email': email}], 'telephones': [{'type': 'mobile', 'number': gsm}], 'addresses': [{'type': 'primary', 'address': {'line_1': straat, 'postal_code': postcode, 'city': gemeente, 'country': 'BE'}}] }).json()
+            else:
+                customer_by_email = api_session.post('https://api.focus.teamleader.eu/contacts.list', json = {'filter': {  'email': {'type': 'primary', 'email': email} } }).json()
+
+                print(customer_by_email)
+                if customer_by_email.get('data'):
+                    customer = customer_by_email.get('data')[0]
+                else:            
+                    customer = api_session.post('https://api.focus.teamleader.eu/contacts.add', json = { 'first_name': voornaam, 'last_name': naam, 'emails': [{'type': 'primary', 'email': email}], 'telephones': [{'type': 'mobile', 'number': gsm}], 'addresses': [{'type': 'primary', 'address': {'line_1': straat, 'postal_code': postcode, 'city': gemeente, 'country': 'BE'}}] }).json()
+            
+            # add timetracking to customer
+            add_timetracking = api_session.post('https://api.focus.teamleader.eu/timeTracking.add', json = {'started_at': van.strftime('%Y-%m-%dT%H:%M:%S+00:00'), 'ended_at': tot.strftime('%Y-%m-%dT%H:%M:%S+00:00'), 'subject': { 'type' : 'contact', 'id': customer.get('id')}})
+
+            
+            print(add_timetracking.content)
 
         session.close()
 
@@ -124,7 +162,6 @@ def authorize():
     tk_response = r.json()
     # update user with new tokens
     if user:
-        
         user.access_token = tk_response.get('access_token')
         user.refresh_token = tk_response.get('refresh_token')
         session.commit()
