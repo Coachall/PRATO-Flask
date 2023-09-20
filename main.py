@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timezone
+import time
 from flask import Flask, jsonify, request
 import os
 import base64
@@ -8,7 +9,9 @@ from db.users import User
 from io import BytesIO
 import requests
 from datetime import datetime
+import urllib3
 
+urllib3.disable_warnings()
 
 app = Flask(__name__)
 
@@ -59,9 +62,43 @@ def catch_invalid_token(r, *args, **kwargs):
         api_session.headers.update({"Authorization": f"Bearer {token}"})
         r.request.headers["Authorization"] = api_session.headers["Authorization"]
         return api_session.send(r.request, verify=False)
+    
+def catch_rate_limit(r, *args, **kwargs):
+    if r.status_code == 429:
+        print("Handling rate limit")
+        # get X-RateLimit-Reset header
+        reset_time_str = r.headers.get('X-RateLimit-Reset')
+        
+        try:
+            # parse the ISO 8601 datetime string to a datetime object
+            reset_time = datetime.fromisoformat(reset_time_str).replace(tzinfo=timezone.utc)
+        except ValueError:
+            # Handle the case where the header value is not a valid ISO 8601 datetime
+            print(f"Invalid X-RateLimit-Reset header value: {reset_time_str}")
+            return None
+        
+        # get current time
+        now = datetime.now(timezone.utc)
+        # calculate the time difference
+        difference = reset_time - now
+        # convert to seconds
+        difference_seconds = difference.total_seconds()
+        
+        if difference_seconds > 0:
+            print(f"Waiting for {difference_seconds} seconds")
+            # wait for the specified time
+            time.sleep(60)
+            # send the request again
+            return api_session.send(r.request, verify=False)
+        else:
+            # The reset time is in the past, so no need to wait
+            print("X-RateLimit-Reset time is in the past. Sending the request immediately.")
+            return api_session.send(r.request, verify=False)
+    
 
 # add the function to the list of hooks
 api_session.hooks['response'].append(catch_invalid_token)
+api_session.hooks['response'].append(catch_rate_limit)
 
 
 @app.route('/', methods=['POST'])
@@ -75,12 +112,10 @@ def index():
     user = session.query(User).filter_by(user_id=sent_to).first()
 
     if user:
-        print(user)
         api_session.headers.update({"Authorization": f"Bearer {user.access_token}"})
         api_session.headers.update({"User": f"{user.user_id}"})
         company_info = api_session.get("https://api.focus.teamleader.eu/departments.list").json()
 
-        print(company_info)
 
         attachments = record.get('Attachments')
         # get sender email
@@ -88,53 +123,124 @@ def index():
         # filter all attachments that are excel files
         excel_files = [attachment for attachment in attachments if attachment.get('Name').endswith('.xlsx')]
         decoded_excel = decode_file(excel_files[0].get('Content'))
-        excel = pandas.read_excel(BytesIO(decoded_excel))
+        df = pandas.read_excel(BytesIO(decoded_excel))
 
-        excel_dict = excel.to_dict(orient='records')
-       
-        for row in excel_dict:
-            id = row.get('KlantID')
-            naam = row.get('Kl_Naam')
-            voornaam = row.get('Kl_Voornaam')
-            email = row.get('KL_Email')
-            gsm = str(row.get('KL_GSM'))
-            straat = row.get('Straat')
-            postcode = row.get('Postcode')
-            gemeente = row.get('GemeenteNaam')
-            van = row.get('Van')
-            tot = row.get('Tot')
+        # Iterate through the rows of the DataFrame
+        transformed_data = {}
 
-            print(van, tot)
-            # check if the first two characters of gsm are '32' and replace them with '0'
-
-            if gsm[:2] == '32':
-                gsm = '0' + gsm[2:]
-                
-            # check if the customer already exists
-            if email == 'geen@schoonmaakzorg.be':
-                customer = api_session.post('https://api.focus.teamleader.eu/contacts.add', json = { 'first_name': voornaam, 'last_name': naam, 'emails': [{'type': 'primary', 'email': email}], 'telephones': [{'type': 'mobile', 'number': gsm}], 'addresses': [{'type': 'primary', 'address': {'line_1': straat, 'postal_code': postcode, 'city': gemeente, 'country': 'BE'}}] }).json()
+        for index, row in df.iterrows():
+            customer_info = {
+                "KlantID": row["KlantID"],
+                "Kl_Naam": row["Kl_Naam"],
+                "Kl_Voornaam": row["Kl_Voornaam"],
+                "KL_Email": row["KL_Email"],
+                "KL_GSM": row["KL_GSM"],
+                "Straat": row["Straat"],
+                "Postcode": row["Postcode"],
+                "GemeenteNaam": row["GemeenteNaam"],
+            }
+            
+            timeframe = {
+                "Van": row["Van"],
+                "Tot": row["Tot"]
+            }
+            
+            # Check if the KlantID already exists in the transformed_data dictionary
+            if row["KlantID"] in transformed_data:
+                transformed_data[row["KlantID"]]["Timeframes"].append(timeframe)
             else:
-                customer_by_email = api_session.post('https://api.focus.teamleader.eu/contacts.list', json = {'filter': {  'email': {'type': 'primary', 'email': email} } }).json()
+                transformed_data[row["KlantID"]] = {
+                    "CustomerInfo": customer_info,
+                    "Timeframes": [timeframe]
+                }
 
-                print(customer_by_email)
-                if customer_by_email.get('data'):
-                    customer = customer_by_email.get('data')[0]
-                else:            
-                    customer = api_session.post('https://api.focus.teamleader.eu/contacts.add', json = { 'first_name': voornaam, 'last_name': naam, 'emails': [{'type': 'primary', 'email': email}], 'telephones': [{'type': 'mobile', 'number': gsm}], 'addresses': [{'type': 'primary', 'address': {'line_1': straat, 'postal_code': postcode, 'city': gemeente, 'country': 'BE'}}] }).json()
-            
-            # add timetracking to customer
-            add_timetracking = api_session.post('https://api.focus.teamleader.eu/timeTracking.add', json = {'started_at': van.strftime('%Y-%m-%dT%H:%M:%S+00:00'), 'ended_at': tot.strftime('%Y-%m-%dT%H:%M:%S+00:00'), 'subject': { 'type' : 'contact', 'id': customer.get('id')}})
+        # Convert the dictionary values to a list
+        transformed_list = list(transformed_data.values())
 
-            
-            print(add_timetracking.content)
+        #print(transformed_list)
 
+        rows_with_errors = []
+
+        for row in transformed_list:
+            try:
+
+                customer_info = row.get('CustomerInfo')
+                id = str(customer_info.get('KlantID'))
+                naam = customer_info.get('Kl_Naam')
+                voornaam = customer_info.get('Kl_Voornaam')
+                email = customer_info.get('KL_Email')
+                gsm = str(customer_info.get('KL_GSM'))
+                straat = customer_info.get('Straat')
+                postcode = customer_info.get('Postcode')
+                gemeente = customer_info.get('GemeenteNaam')
+
+                custom_field = user.custom_field_id
+                # check if there are spaces in gsm and remove them
+                if ' ' in gsm:
+                    gsm = gsm.replace(' ', '')
+
+                # check if the first two characters of gsm are '32' and replace them with '0'
+                if gsm[:2] == '32':
+                    gsm = '0' + gsm[2:]
+
+                # check if gsm length is 10
+                if len(gsm) != 10:
+                    rows_with_errors.append(row)
+                    continue
+
+
+
+                # check if the customer already exists
+                if email == 'geen@schoonmaakzorg.be':
+                    customer_by_phone = api_session.post('https://api.focus.teamleader.eu/contacts.list', json = {'filter': {  'term': gsm}  }).json()
+                    if customer_by_phone.get('data'):
+                        customer = {
+                            'data': {
+                                'id': customer_by_phone.get('data')[0].get('id')
+                            }
+                        }
+                    else:
+                        customer = api_session.post('https://api.focus.teamleader.eu/contacts.add', json = { 'first_name': voornaam, 'last_name': naam, 'emails': [{'type': 'primary', 'email': email}],  'telephones': [{'type': 'mobile', 'number': gsm}] if gsm != None else None, 'addresses': [{'type': 'primary', 'address': {'line_1': straat, 'postal_code': postcode, 'city': gemeente, 'country': 'BE'}}], 'custom_fields' : [{ 'id': user.custom_field_id, 'value': id}] }).json()
+                else: 
+                    customer_by_email = api_session.post('https://api.focus.teamleader.eu/contacts.list', json = {'filter': {  'email': {'type': 'primary', 'email': email} } }).json()
+
+                    if customer_by_email.get('data'):
+                        customer = {
+                            'data': {
+                                'id': customer_by_email.get('data')[0].get('id')
+                            }
+                        }
+                    else:            
+                        customer = api_session.post('https://api.focus.teamleader.eu/contacts.add', json = { 'first_name': voornaam, 'last_name': naam, 'emails': [{'type': 'primary', 'email': email}], 'telephones': [{'type': 'mobile', 'number': gsm}], 'addresses': [{'type': 'primary', 'address': {'line_1': straat, 'postal_code': postcode, 'city': gemeente, 'country': 'BE'}}], 'custom_fields' : [{ 'id': user.custom_field_id, 'value': id}] }).json()
+                print(customer)
+                # add timetracking to customer
+                for timeframe in row.get('Timeframes'):
+                    van = timeframe.get('Van')
+                    tot = timeframe.get('Tot')
+                    # check if timetracking already exists
+                    timetracking = api_session.post('https://api.focus.teamleader.eu/timeTracking.list', json = {'filter': { 'started_after': van.strftime('%Y-%m-%dT%H:%M:%S+01:00'), 'ended_before': tot.strftime('%Y-%m-%dT%H:%M:%S+01:00'), 'subject': { 'type' : 'contact', 'id': customer.get('data').get('id')}}}).json()
+                    if len(timetracking.get('data')) > 0:
+                        print(van.strftime('%Y-%m-%dT%H:%M:%S+01:00'))
+                        print('timetracking already exists')
+                        continue
+                    else:
+                        api_session.post('https://api.focus.teamleader.eu/timeTracking.add', json = {'started_at': van.strftime('%Y-%m-%dT%H:%M:%S+01:00'), 'ended_at': tot.strftime('%Y-%m-%dT%H:%M:%S+01:00'), 'subject': { 'type' : 'contact', 'id': customer.get('data').get('id')}, 'work_type_id': user.work_type_id})
+
+            except Exception as e:
+            # Handle the exception and log the error
+                print(f"Error processing row: {e}")
+
+
+        
+       
         session.close()
+        print('rows with errors:')
+        print(rows_with_errors)
 
-        return jsonify({"Status": "Oke"})
+    # return status code 200
+    return "Success", 200
 
-    else:
-        session.close()
-        return jsonify({"404": "Not found"})
+
 
 # create a route for the initial authorization with Teamleader
 @app.route('/authorize', methods=['GET'])
@@ -143,7 +249,7 @@ def authorize():
     client_id = os.getenv("CLIENT_ID")
     client_secret = os.getenv("CLIENT_SECRET")
     grant_type = "authorization_code"
-    redirect_uri = "https://fcf954e69fbcaf.lhr.life/authorize"
+    redirect_uri = "https://3ebfe3978949ac.lhr.life/authorize"
 
     user_id = request.args.get('state')
     session = Session()
