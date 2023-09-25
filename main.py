@@ -117,6 +117,7 @@ def my_task(request_data):
         sent_to = sent_to.split('@')[0].replace('"', '')
         user = session.query(User).filter_by(user_id=sent_to).first()
 
+        print(user)
         if user:
             api_session.headers.update({"Authorization": f"Bearer {user.access_token}"})
             api_session.headers.update({"User": f"{user.user_id}"})
