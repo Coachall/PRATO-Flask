@@ -40,15 +40,19 @@ def refresh_token(request):
         "client_secret": client_secret,
         "grant_type": grant_type
     }
+    try:
+        # get new token
+        r = requests.post("https://focus.teamleader.eu/oauth2/access_token", data=payload)
+        r.raise_for_status()  # Raise an exception for any HTTP error
 
-    # get new token
-    r = requests.post("https://focus.teamleader.eu/oauth2/access_token", data=payload)
-    # update user with new tokens
-    user.refresh_token = r.json().get('refresh_token')
-    user.access_token = r.json().get('access_token')
+        # update user with new tokens
+        user.refresh_token = r.json().get('refresh_token')
+        user.access_token = r.json().get('access_token')
 
-    # commit changes
-    session.commit()
+        # commit changes
+        session.commit()
+    except requests.exceptions.RequestException as err:
+        print(err)
 
     session.close() 
 
