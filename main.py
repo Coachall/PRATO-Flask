@@ -41,6 +41,7 @@ def refresh_token(request):
         "grant_type": grant_type
     }
     try:
+        print(payload)
         # get new token
         r = requests.post("https://focus.teamleader.eu/oauth2/access_token", data=payload)
         r.raise_for_status()  # Raise an exception for any HTTP error
