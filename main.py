@@ -275,7 +275,7 @@ def authorize():
     client_id = os.getenv("CLIENT_ID")
     client_secret = os.getenv("CLIENT_SECRET")
     grant_type = "authorization_code"
-    redirect_uri = "https://3ebfe3978949ac.lhr.life/authorize"
+    redirect_uri = os.getenv("REDIRECT_URI")
 
     user_id = request.args.get('state')
     session = Session()
