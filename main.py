@@ -272,9 +272,11 @@ def my_task(request):
 
 @app.route('/', methods=['POST'])
 def index():
-    Thread(target = my_task, args=(request)).start()
+    response = jsonify(message="Request received and is being processed")
+    response.status_code = 200
     # return status code 200
-    return "Success", 200
+    Thread(target = my_task(request)).start()
+    return response
 
 
 # create a route for the initial authorization with Teamleader
