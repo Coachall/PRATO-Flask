@@ -270,7 +270,7 @@ def my_task(request):
 
 @app.route('/', methods=['POST'])
 def index():
-    Thread(target = my_task(request)).start()
+    Thread(target = my_task, args=(request)).start()
     # return status code 200
     return "Success", 200
 
