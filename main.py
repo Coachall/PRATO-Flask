@@ -101,11 +101,10 @@ def catch_rate_limit(r, *args, **kwargs):
 api_session.hooks['response'].append(catch_invalid_token)
 api_session.hooks['response'].append(catch_rate_limit)
 
-def my_task(request):
+def my_task(request_data):
     with app.app_context():
-
         session = Session()
-        record = request.get_json()
+        record = request_data
 
         sent_to = record.get('To')
         sent_from = record.get('From')
@@ -272,10 +271,11 @@ def my_task(request):
 
 @app.route('/', methods=['POST'])
 def index():
+    request_data = request.get_json()
     response = jsonify(message="Request received and is being processed")
     response.status_code = 200
     # return status code 200
-    Thread(target = my_task(request)).start()
+    Thread(target = my_task, args=(request_data)).start()
     return response
 
 
