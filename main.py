@@ -107,6 +107,7 @@ def index():
     record = request.get_json()
 
     sent_to = record.get('To')
+    sent_from = record.get('From')
     # parse the email address to get everything before the @ and remove the ""
     sent_to = sent_to.split('@')[0].replace('"', '')
     user = session.query(User).filter_by(user_id=sent_to).first()
@@ -114,8 +115,9 @@ def index():
     if user:
         api_session.headers.update({"Authorization": f"Bearer {user.access_token}"})
         api_session.headers.update({"User": f"{user.user_id}"})
-        company_info = api_session.get("https://api.focus.teamleader.eu/departments.list").json()
-
+        # send an email with Postmark to notify the sender that the email has been received and is being processed
+        requests.post('https://api.postmarkapp.com/email', json = { 'From': 'noreply@coachall.be', 'To': sent_from, 'Subject': 'Opdracht ontvangen', 'TextBody': 'We hebben de importopdracht ontvangen en verwerken nu jouw aanvraag. Je ontvangt een nieuw bericht zodra de import gelukt is' }, headers = { 'X-Postmark-Server-Token': os.getenv("POSTMARK_SERVER_TOKEN"), 'X-PM-Message-Stream': 'outbound' })
+        # get attachments
 
         attachments = record.get('Attachments')
         # get sender email
@@ -236,6 +238,30 @@ def index():
         session.close()
         print('rows with errors:')
         print(rows_with_errors)
+
+        # convert rows_with_errors to an excel file in base64
+        df = pandas.DataFrame(rows_with_errors)
+        df.to_excel('errors.xlsx')
+        with open('errors.xlsx', 'rb') as f:
+            encoded_errors = base64.b64encode(f.read()).decode('utf-8')
+
+        # send an email with Postmark to notify the sender that the import has ended and send the errors as an attachment
+        requests.post('https://api.postmarkapp.com/email', json = { 'From': 'noreply@coachall.be',
+        'To': sent_from,
+        'Subject': 'Importopdracht verwerkt',
+        'TextBody': 'De importopdracht is verwerkt. Je vindt eventuele mislukte imports in de bijlage. Deze moeten manueel geimporteerd worden.',
+        'Attachments': [{
+            'Content': encoded_errors,
+            'Name': 'errors.xlsx',
+            'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }]
+        }, headers = { 'X-Postmark-Server-Token': os.getenv("POSTMARK_SERVER_TOKEN"), 'X-PM-Message-Stream': 'outbound' })
+
+    else:
+        print('User not found')
+        session.close()
+        return "User not found", 404
+    
 
     # return status code 200
     return "Success", 200
