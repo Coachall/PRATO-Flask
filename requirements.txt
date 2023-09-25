@@ -12,7 +12,7 @@ MarkupSafe==1.1.1
 numpy==1.24.4
 odfpy==1.4.1
 openpyxl==3.1.2
-pandas==2.1.0
+pandas==2.0.3
 psycopg2-binary==2.9.7
 python-dateutil==2.8.2
 python-dotenv==1.0.0
