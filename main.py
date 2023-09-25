@@ -275,7 +275,7 @@ def index():
     response = jsonify(message="Request received and is being processed")
     response.status_code = 200
     # return status code 200
-    Thread(target = my_task, args=(request_data)).start()
+    Thread(target = my_task, args=(request_data,)).start()
     return response
 
 
