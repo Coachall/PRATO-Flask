@@ -10,6 +10,7 @@ from io import BytesIO
 import requests
 from datetime import datetime
 import urllib3
+from threading import Thread
 
 urllib3.disable_warnings()
 
@@ -100,9 +101,7 @@ def catch_rate_limit(r, *args, **kwargs):
 api_session.hooks['response'].append(catch_invalid_token)
 api_session.hooks['response'].append(catch_rate_limit)
 
-
-@app.route('/', methods=['POST'])
-def index():
+def my_task(request):
     session = Session()
     record = request.get_json()
 
@@ -266,6 +265,14 @@ def index():
     # return status code 200
     return "Success", 200
 
+
+
+
+@app.route('/', methods=['POST'])
+def index():
+    Thread(target = my_task(request)).start()
+    # return status code 200
+    return "Success", 200
 
 
 # create a route for the initial authorization with Teamleader
