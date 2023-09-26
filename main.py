@@ -250,6 +250,21 @@ def my_task(request_data):
             # convert rows_with_errors to an excel file, formatted like the original excel and put it in base64
             errors_df = pandas.DataFrame(rows_with_errors)
 
+            def extract_data(row):
+                customer_info = row.get('CustomerInfo', {})
+                return pandas.Series({
+                    'KlantID': customer_info.get('KlantID'),
+                    'Kl_Naam': customer_info.get('Kl_Naam'),
+                    'Kl_Voornaam': customer_info.get('Kl_Voornaam'),
+                    'KL_Email': customer_info.get('KL_Email'),
+                    'KL_GSM': customer_info.get('KL_GSM'),
+                    'Straat': customer_info.get('Straat'),
+                    'Postcode': customer_info.get('Postcode'),
+                    'GemeenteNaam': customer_info.get('GemeenteNaam'),
+                })
+            
+            errors_df = errors_df.apply(extract_data, axis=1)
+
             df = pandas.concat([template_df, errors_df], ignore_index=True)
 
 
