@@ -276,7 +276,8 @@ def my_task(request_data):
                     new_row['Tot'] = timeframe['Tot']
                     # You can calculate 'Uren_effectief_gewerkt' here based on your logic
                     # For now, I'll set it as an empty string
-                    new_row['Uren_effectief_gewerkt'] = ''
+                    customer_data = extract_data(row)
+                    new_row.update(customer_data)
                     rows_per_timeframe.append(new_row)
 
             # Create a new DataFrame from the list of rows per timeframe
@@ -285,8 +286,7 @@ def my_task(request_data):
             # Reset the index of the result DataFrame
             result_df.reset_index(drop=True, inplace=True)  
 
-            result_df.apply(extract_data, axis=1)
-            
+
             df = pandas.concat([template_df, result_df], ignore_index=True)
 
 
