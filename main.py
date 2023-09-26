@@ -248,8 +248,9 @@ def my_task(request_data):
             print(rows_with_errors)
 
             # convert rows_with_errors to an excel file, formatted like the original excel and put it in base64
+            errors_df = pandas.DataFrame(rows_with_errors)
 
-            df = template_df.append(rows_with_errors, ignore_index=True)
+            df = pandas.concat([template_df, errors_df], ignore_index=True)
 
 
 
