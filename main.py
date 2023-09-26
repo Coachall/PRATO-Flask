@@ -133,7 +133,7 @@ def my_task(request_data):
             decoded_excel = decode_file(excel_files[0].get('Content'))
             df = pandas.read_excel(BytesIO(decoded_excel))
 
-            template_df = pandas.DataFrame(columns=decoded_excel.columns)
+            template_df = pandas.DataFrame(columns=df.columns)
 
             # Iterate through the rows of the DataFrame
             transformed_data = {}
