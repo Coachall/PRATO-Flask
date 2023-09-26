@@ -247,47 +247,36 @@ def my_task(request_data):
             print('rows with errors:')
             print(rows_with_errors)
 
-            # convert rows_with_errors to an excel file, formatted like the original excel and put it in base64
-            errors_df = pandas.DataFrame(rows_with_errors)
+            rows = []
 
-            def extract_data(row):
-                customer_info = row.get('CustomerInfo', {})
-                return pandas.Series({
-                    'KlantID': customer_info.get('KlantID'),
-                    'Kl_Naam': customer_info.get('Kl_Naam'),
-                    'Kl_Voornaam': customer_info.get('Kl_Voornaam'),
-                    'KL_Email': customer_info.get('KL_Email'),
-                    'KL_GSM': customer_info.get('KL_GSM'),
-                    'Straat': customer_info.get('Straat'),
-                    'Postcode': customer_info.get('Postcode'),
-                    'GemeenteNaam': customer_info.get('GemeenteNaam'),
-                })
-            
-            # errors_df = errors_df
+           # Iterate through the transformed_list and create rows
+            for entry in rows_with_errors:
+                customer_info = entry["CustomerInfo"]
+                timeframes = entry["Timeframes"]
+                
+                # Iterate through timeframes for each customer
+                for timeframe in timeframes:
+                    # Create a row by combining customer info and timeframe
+                    row = {
+                        "KlantID": customer_info["KlantID"],
+                        "Kl_Naam": customer_info["Kl_Naam"],
+                        "Kl_Voornaam": customer_info["Kl_Voornaam"],
+                        "KL_Email": customer_info["KL_Email"],
+                        "KL_GSM": customer_info["KL_GSM"],
+                        "Straat": customer_info["Straat"],
+                        "Postcode": customer_info["Postcode"],
+                        "GemeenteNaam": customer_info["GemeenteNaam"],
+                        "Van": timeframe["Van"],
+                        "Tot": timeframe["Tot"]
+                    }
+                    
+                    rows.append(row)
 
-            # Create an empty list to store rows for each timeframe
-            rows_per_timeframe = []
-
-            # Iterate through errors_df and create separate rows for each timeframe
-            for index, row in errors_df.iterrows():
-                for timeframe in row['Timeframes']:
-                    new_row = row.copy()
-                    new_row['Van'] = timeframe['Van']
-                    new_row['Tot'] = timeframe['Tot']
-                    # You can calculate 'Uren_effectief_gewerkt' here based on your logic
-                    # For now, I'll set it as an empty string
-                    customer_data = extract_data(row)
-                    new_row.update(customer_data)
-                    rows_per_timeframe.append(new_row)
-
-            # Create a new DataFrame from the list of rows per timeframe
-            result_df = pandas.DataFrame(rows_per_timeframe)
-
-            # Reset the index of the result DataFrame
-            result_df.reset_index(drop=True, inplace=True)  
+            # Create a DataFrame from the list of rows
+            reversed_df = pandas.DataFrame(rows)
 
 
-            df = pandas.concat([template_df, result_df], ignore_index=True)
+            df = pandas.concat([template_df, reversed_df], ignore_index=True)
 
 
 
