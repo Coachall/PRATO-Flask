@@ -133,6 +133,8 @@ def my_task(request_data):
             decoded_excel = decode_file(excel_files[0].get('Content'))
             df = pandas.read_excel(BytesIO(decoded_excel))
 
+            template_df = pandas.DataFrame(columns=decoded_excel.columns)
+
             # Iterate through the rows of the DataFrame
             transformed_data = {}
 
@@ -245,9 +247,13 @@ def my_task(request_data):
             print('rows with errors:')
             print(rows_with_errors)
 
-            # convert rows_with_errors to an excel file in base64
-            df = pandas.DataFrame(rows_with_errors)
-            df.to_excel('errors.xlsx')
+            # convert rows_with_errors to an excel file, formatted like the original excel and put it in base64
+
+            df = template_df.append(rows_with_errors, ignore_index=True)
+
+
+
+            df.to_excel('errors.xlsx', index=False)
             with open('errors.xlsx', 'rb') as f:
                 encoded_errors = base64.b64encode(f.read()).decode('utf-8')
 
