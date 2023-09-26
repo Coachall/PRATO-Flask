@@ -263,7 +263,7 @@ def my_task(request_data):
                     'GemeenteNaam': customer_info.get('GemeenteNaam'),
                 })
             
-            errors_df = errors_df.apply(extract_data, axis=1)
+            # errors_df = errors_df
 
             # Create an empty list to store rows for each timeframe
             rows_per_timeframe = []
@@ -285,6 +285,8 @@ def my_task(request_data):
             # Reset the index of the result DataFrame
             result_df.reset_index(drop=True, inplace=True)  
 
+            result_df.apply(extract_data, axis=1)
+            
             df = pandas.concat([template_df, result_df], ignore_index=True)
 
 
