@@ -265,7 +265,27 @@ def my_task(request_data):
             
             errors_df = errors_df.apply(extract_data, axis=1)
 
-            df = pandas.concat([template_df, errors_df], ignore_index=True)
+            # Create an empty list to store rows for each timeframe
+            rows_per_timeframe = []
+
+            # Iterate through errors_df and create separate rows for each timeframe
+            for index, row in errors_df.iterrows():
+                for timeframe in row['Timeframes']:
+                    new_row = row.copy()
+                    new_row['Van'] = timeframe['Van']
+                    new_row['Tot'] = timeframe['Tot']
+                    # You can calculate 'Uren_effectief_gewerkt' here based on your logic
+                    # For now, I'll set it as an empty string
+                    new_row['Uren_effectief_gewerkt'] = ''
+                    rows_per_timeframe.append(new_row)
+
+            # Create a new DataFrame from the list of rows per timeframe
+            result_df = pandas.DataFrame(rows_per_timeframe)
+
+            # Reset the index of the result DataFrame
+            result_df.reset_index(drop=True, inplace=True)  
+
+            df = pandas.concat([template_df, result_df], ignore_index=True)
 
 
 
