@@ -179,7 +179,7 @@ def my_task(request_data):
                     naam = customer_info.get('Kl_Naam')
                     voornaam = customer_info.get('Kl_Voornaam')
                     email = customer_info.get('KL_Email')
-                    gsm = str(customer_info.get('KL_GSM'))
+                    gsm = str(int(customer_info.get('KL_GSM')))
                     straat = customer_info.get('Straat')
                     postcode = customer_info.get('Postcode')
                     gemeente = customer_info.get('GemeenteNaam')
@@ -196,7 +196,7 @@ def my_task(request_data):
                         else:
                             gsm = '04' + gsm[2:]
 
-                    gsm = str(gsm)
+
                     # check if gsm length is 10
                     if len(gsm) != 10:
                         rows_with_errors.append(row)
