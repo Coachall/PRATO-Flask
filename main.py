@@ -191,7 +191,10 @@ def my_task(request_data):
 
                     # check if the first two characters of gsm are '32' and replace them with '0'
                     if gsm[:2] == '32':
-                        gsm = '0' + gsm[2:]
+                        if gsm[:3] == '324':
+                            gsm = '0' + gsm[2:]
+                        else:
+                            gsm = '04' + gsm[2:]
 
                     # check if gsm length is 10
                     if len(gsm) != 10:
