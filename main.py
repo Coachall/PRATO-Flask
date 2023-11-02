@@ -196,11 +196,14 @@ def my_task(request_data):
                         else:
                             gsm = '04' + gsm[2:]
 
+                    if gsm[:2] == '31':
+                        gsm = '00' + gsm
+
 
                     # check if gsm length is 10
-                    if len(gsm) != 10:
-                        rows_with_errors.append(row)
-                        continue
+                    # if len(gsm) != 10:
+                    #     rows_with_errors.append(row)
+                    #     continue
 
 
 
