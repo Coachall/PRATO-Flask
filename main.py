@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import math
 import time
 from flask import Flask, jsonify, request, current_app
 import os
@@ -208,11 +209,15 @@ def my_task(request_data):
                     naam = customer_info.get("Kl_Naam")
                     voornaam = customer_info.get("Kl_Voornaam")
                     email = customer_info.get("KL_Email")
-                    gsm = str(customer_info.get("KL_GSM"))
+                    gsm = customer_info.get("KL_GSM")
                     straat = customer_info.get("Straat")
                     postcode = customer_info.get("Postcode")
                     gemeente = customer_info.get("GemeenteNaam")
 
+                    if isinstance(gsm, float) and math.isnan(gsm):
+                        gsm = None  # Set gsm to None or handle it as needed for NaN values
+                    else:
+                        gsm = str(gsm)
                     custom_field = user.custom_field_id
                     # check if there are spaces in gsm and remove them
                     if " " in gsm:
