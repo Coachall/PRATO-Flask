@@ -238,6 +238,8 @@ def my_task(request_data):
                     if gsm is None:
                         gsm = False
 
+                    print(customer_info)
+
                     # check if gsm length is 10
                     # if len(gsm) != 10:
                     #     rows_with_errors.append(row)
