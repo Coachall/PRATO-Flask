@@ -208,7 +208,7 @@ def my_task(request_data):
                     naam = customer_info.get("Kl_Naam")
                     voornaam = customer_info.get("Kl_Voornaam")
                     email = customer_info.get("KL_Email")
-                    gsm = str(int(customer_info.get("KL_GSM")))
+                    gsm = str(customer_info.get("KL_GSM"))
                     straat = customer_info.get("Straat")
                     postcode = customer_info.get("Postcode")
                     gemeente = customer_info.get("GemeenteNaam")
