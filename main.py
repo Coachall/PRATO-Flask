@@ -296,8 +296,6 @@ def my_task(request_data):
                                 }
                             }
                         elif gsm != None:
-                            print(gsm)
-
                             customer = api_session.post(
                                 "https://api.focus.teamleader.eu/contacts.add",
                                 json={
@@ -322,6 +320,7 @@ def my_task(request_data):
                                 },
                             ).json()
                         else:
+                            print(gsm)
                             customer = api_session.post(
                                 "https://api.focus.teamleader.eu/contacts.add",
                                 json={
