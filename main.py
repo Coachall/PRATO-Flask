@@ -214,6 +214,9 @@ def my_task(request_data):
                     postcode = customer_info.get("Postcode")
                     gemeente = customer_info.get("GemeenteNaam")
 
+                    if isinstance(email, float) and math.isnan(email):
+                        email = None  # Set gsm to None or handle it as needed for NaN values
+
                     if isinstance(gsm, float) and math.isnan(gsm):
                         gsm = None  # Set gsm to None or handle it as needed for NaN values
                     else:
@@ -326,6 +329,7 @@ def my_task(request_data):
                                     ],
                                 },
                             ).json()
+
                         else:
                             print(gsm)
                             customer = api_session.post(
@@ -350,6 +354,9 @@ def my_task(request_data):
                                     ],
                                 },
                             ).json()
+                    else:
+                        rows_with_errors.append(row)
+                        continue
                     # add timetracking to customer
                     for timeframe in row.get("Timeframes"):
                         van = timeframe.get("Van")
