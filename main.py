@@ -225,15 +225,15 @@ def my_task(request_data):
                     if gsm is not None:
                         gsm = "".join(filter(str.isdigit, gsm))
 
-                    # Remaining logic
-                    if gsm[:2] == "32":
-                        if gsm[:3] == "324":
-                            gsm = "0" + gsm[2:]
-                        else:
-                            gsm = "04" + gsm[2:]
+                        # Remaining logic
+                        if gsm[:2] == "32":
+                            if gsm[:3] == "324":
+                                gsm = "0" + gsm[2:]
+                            else:
+                                gsm = "04" + gsm[2:]
 
-                    if gsm[:2] == "31":
-                        gsm = "00" + gsm
+                        if gsm[:2] == "31":
+                            gsm = "00" + gsm
 
                     if gsm is None:
                         gsm = False
