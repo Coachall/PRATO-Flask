@@ -245,7 +245,6 @@ def my_task(request_data):
 
                     # check if the customer already exists
                     if email == "geen@schoonmaakzorg.be" and gsm != None:
-                        print(gsm)
                         customer_by_phone = api_session.post(
                             "https://api.focus.teamleader.eu/contacts.list",
                             json={"filter": {"term": gsm}},
@@ -297,6 +296,8 @@ def my_task(request_data):
                                 }
                             }
                         elif gsm != None:
+                            print(gsm)
+
                             customer = api_session.post(
                                 "https://api.focus.teamleader.eu/contacts.add",
                                 json={
@@ -343,7 +344,6 @@ def my_task(request_data):
                                     ],
                                 },
                             ).json()
-                    print(customer)
                     # add timetracking to customer
                     for timeframe in row.get("Timeframes"):
                         van = timeframe.get("Van")
