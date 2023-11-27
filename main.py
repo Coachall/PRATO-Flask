@@ -243,10 +243,9 @@ def my_task(request_data):
                     #     rows_with_errors.append(row)
                     #     continue
 
-                    print(gsm)
-
                     # check if the customer already exists
                     if email == "geen@schoonmaakzorg.be" and gsm != None:
+                        print(gsm)
                         customer_by_phone = api_session.post(
                             "https://api.focus.teamleader.eu/contacts.list",
                             json={"filter": {"term": gsm}},
