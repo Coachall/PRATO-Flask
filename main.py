@@ -173,23 +173,23 @@ def my_task(request_data):
 
             for index, row in df.iterrows():
                 customer_info = {
-                    "KlantID": row["KlantID"],
-                    "Kl_Naam": row["Kl_Naam"],
-                    "Kl_Voornaam": row["Kl_Voornaam"],
-                    "KL_Email": row["KL_Email"],
-                    "KL_GSM": row["KL_GSM"],
-                    "Straat": row["Straat"],
-                    "Postcode": row["Postcode"],
-                    "GemeenteNaam": row["GemeenteNaam"],
+                    "KlantID": row["klantid"],
+                    "Kl_Naam": row["kl_naam"],
+                    "Kl_Voornaam": row["kl_voornaam"],
+                    "KL_Email": row["kl_email"],
+                    "KL_GSM": row["kl_gsm"],
+                    "Straat": row["straat"],
+                    "Postcode": row["postcode"],
+                    "GemeenteNaam": row["gemeentenaam"],
                 }
 
-                timeframe = {"Van": row["Van"], "Tot": row["Tot"]}
+                timeframe = {"Van": row["van"], "Tot": row["tot"]}
 
                 # Check if the KlantID already exists in the transformed_data dictionary
-                if row["KlantID"] in transformed_data:
-                    transformed_data[row["KlantID"]]["Timeframes"].append(timeframe)
+                if row["klantid"] in transformed_data:
+                    transformed_data[row["klantid"]]["Timeframes"].append(timeframe)
                 else:
-                    transformed_data[row["KlantID"]] = {
+                    transformed_data[row["klantid"]] = {
                         "CustomerInfo": customer_info,
                         "Timeframes": [timeframe],
                     }
