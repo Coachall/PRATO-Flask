@@ -222,7 +222,8 @@ def my_task(request_data):
                         gsm = gsm.replace("/", "")
 
                     # Filter non-numeric characters
-                    gsm = "".join(filter(str.isdigit, gsm))
+                    if gsm is not None:
+                        gsm = "".join(filter(str.isdigit, gsm))
 
                     # Remaining logic
                     if gsm[:2] == "32":
