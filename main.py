@@ -221,7 +221,10 @@ def my_task(request_data):
                     if "/" in gsm:
                         gsm = gsm.replace("/", "")
 
-                    # check if the first two characters of gsm are '32' and replace them with '0'
+                    # Filter non-numeric characters
+                    gsm = "".join(filter(str.isdigit, gsm))
+
+                    # Remaining logic
                     if gsm[:2] == "32":
                         if gsm[:3] == "324":
                             gsm = "0" + gsm[2:]
