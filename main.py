@@ -235,7 +235,7 @@ def my_task(request_data):
                         gsm = "00" + gsm
 
                     if gsm is None:
-                        gsm = None
+                        gsm = False
 
                     # check if gsm length is 10
                     # if len(gsm) != 10:
@@ -243,7 +243,7 @@ def my_task(request_data):
                     #     continue
 
                     # check if the customer already exists
-                    if email == "geen@schoonmaakzorg.be":
+                    if email == "geen@schoonmaakzorg.be" and gsm != None:
                         customer_by_phone = api_session.post(
                             "https://api.focus.teamleader.eu/contacts.list",
                             json={"filter": {"term": gsm}},
@@ -280,7 +280,7 @@ def my_task(request_data):
                                     ],
                                 },
                             ).json()
-                    else:
+                    elif email != None:
                         customer_by_email = api_session.post(
                             "https://api.focus.teamleader.eu/contacts.list",
                             json={
