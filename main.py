@@ -294,7 +294,7 @@ def my_task(request_data):
                                     "id": customer_by_email.get("data")[0].get("id")
                                 }
                             }
-                        else:
+                        elif gsm != None:
                             customer = api_session.post(
                                 "https://api.focus.teamleader.eu/contacts.add",
                                 json={
@@ -302,6 +302,29 @@ def my_task(request_data):
                                     "last_name": naam,
                                     "emails": [{"type": "primary", "email": email}],
                                     "telephones": [{"type": "mobile", "number": gsm}],
+                                    "addresses": [
+                                        {
+                                            "type": "primary",
+                                            "address": {
+                                                "line_1": straat,
+                                                "postal_code": postcode,
+                                                "city": gemeente,
+                                                "country": "BE",
+                                            },
+                                        }
+                                    ],
+                                    "custom_fields": [
+                                        {"id": user.custom_field_id, "value": id}
+                                    ],
+                                },
+                            ).json()
+                        else:
+                            customer = api_session.post(
+                                "https://api.focus.teamleader.eu/contacts.add",
+                                json={
+                                    "first_name": voornaam,
+                                    "last_name": naam,
+                                    "emails": [{"type": "primary", "email": email}],
                                     "addresses": [
                                         {
                                             "type": "primary",
