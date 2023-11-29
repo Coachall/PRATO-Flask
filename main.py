@@ -242,11 +242,7 @@ def my_task(request_data):
                         if gsm[:2] == "31":
                             gsm = "00" + gsm
 
-                    # check if gsm length is 10
-                    # if len(gsm) != 10:
-                    #     rows_with_errors.append(row)
-                    #     continue
-
+                    print(gsm, email, naam, voornaam, straat, postcode, gemeente)
                     # check if the customer already exists
                     if email == "geen@schoonmaakzorg.be" and gsm != None:
                         customer_by_phone = api_session.post(
@@ -325,7 +321,6 @@ def my_task(request_data):
                             ).json()
 
                         else:
-                            print(email)
                             customer = api_session.post(
                                 "https://api.focus.teamleader.eu/contacts.add",
                                 json={
