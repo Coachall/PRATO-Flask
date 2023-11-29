@@ -491,6 +491,7 @@ def my_task(request_data):
                 },
             )
 
+            rows_with_errors = []
         else:
             print("User not found")
             session.close()
