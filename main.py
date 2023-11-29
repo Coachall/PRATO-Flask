@@ -242,8 +242,6 @@ def my_task(request_data):
                         if gsm[:2] == "31":
                             gsm = "00" + gsm
 
-                    print(id, gsm)
-
                     # check if gsm length is 10
                     # if len(gsm) != 10:
                     #     rows_with_errors.append(row)
@@ -327,7 +325,7 @@ def my_task(request_data):
                             ).json()
 
                         else:
-                            print(gsm)
+                            print(email)
                             customer = api_session.post(
                                 "https://api.focus.teamleader.eu/contacts.add",
                                 json={
