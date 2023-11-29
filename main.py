@@ -211,7 +211,7 @@ def my_task(request_data):
                     postcode = customer_info.get("Postcode")
                     gemeente = customer_info.get("GemeenteNaam")
 
-                    if math.isnan(email):
+                    if isinstance(email, float) and math.isnan(email):
                         email = None  # Set gsm to None or handle it as needed for NaN values
 
                     if isinstance(gsm, float) and math.isnan(gsm):
