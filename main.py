@@ -217,6 +217,7 @@ def my_task(request_data):
                     else:
                         print("is not nan")
                         gsm = str(gsm)
+                        print(gsm)
                         # check if there are spaces in gsm and remove them
                         if " " in gsm:
                             gsm = gsm.replace(" ", "")
