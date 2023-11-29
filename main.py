@@ -429,6 +429,7 @@ def my_task(request_data):
                 except Exception as e:
                     # Handle the exception and log the error
                     print(f"Error processing row: {e}")
+                    rows_with_errors.append(row)
 
             session.close()
             print("rows with errors:")
