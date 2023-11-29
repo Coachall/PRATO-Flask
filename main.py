@@ -240,8 +240,7 @@ def my_task(request_data):
 
                         if gsm[:2] == "31":
                             gsm = "00" + gsm
-                    print(customer_info)
-                    print(gsm, email, naam, voornaam, straat, postcode, gemeente)
+
                     # check if the customer already exists
                     if email == "geen@schoonmaakzorg.be" and gsm != None:
                         customer_by_phone = api_session.post(
@@ -387,8 +386,8 @@ def my_task(request_data):
                         tot_str = timeframe.get("Tot")
 
                         # Convert strings to datetime objects
-                        van = datetime.strptime(van_str, "%Y-%m-%dT%H:%M:%S")
-                        tot = datetime.strptime(tot_str, "%Y-%m-%dT%H:%M:%S")
+                        van = datetime.strptime(van_str, "%d/%m/%Y %H:%M")
+                        tot = datetime.strptime(tot_str, "%d/%m/%Y %H:%M")
                         # check if timetracking already exists
                         timetracking = api_session.post(
                             "https://api.focus.teamleader.eu/timeTracking.list",
