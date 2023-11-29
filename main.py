@@ -222,6 +222,8 @@ def my_task(request_data):
                     # check if there are spaces in gsm and remove them
                     if " " in gsm:
                         gsm = gsm.replace(" ", "")
+                    if "." in gsm:
+                        gsm = gsm.replace(" ", "")
 
                     if "/" in gsm:
                         gsm = gsm.replace("/", "")
