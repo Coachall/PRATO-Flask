@@ -217,15 +217,14 @@ def my_task(request_data):
                     else:
                         print("is not nan")
                         gsm = str(gsm)
-                    custom_field = user.custom_field_id
-                    # check if there are spaces in gsm and remove them
-                    if " " in gsm:
-                        gsm = gsm.replace(" ", "")
-                    if "." in gsm:
-                        gsm = gsm.replace(" ", "")
+                        # check if there are spaces in gsm and remove them
+                        if " " in gsm:
+                            gsm = gsm.replace(" ", "")
+                        if "." in gsm:
+                            gsm = gsm.replace(" ", "")
 
-                    if "/" in gsm:
-                        gsm = gsm.replace("/", "")
+                        if "/" in gsm:
+                            gsm = gsm.replace("/", "")
 
                     # Filter non-numeric characters
                     if gsm is not None:
