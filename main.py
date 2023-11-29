@@ -130,7 +130,6 @@ def my_task(request_data):
         sent_to = sent_to.split("@")[0].replace('"', "")
         user = session.query(User).filter_by(user_id=sent_to).first()
 
-        print(user)
         if user:
             api_session.headers.update({"Authorization": f"Bearer {user.access_token}"})
             api_session.headers.update({"User": f"{user.user_id}"})
@@ -169,8 +168,6 @@ def my_task(request_data):
 
             # convert all column headers to lowercase
             df.columns = df.columns.str.lower()
-
-            print(df.columns)
 
             for index, row in df.iterrows():
                 customer_info = {
@@ -242,9 +239,6 @@ def my_task(request_data):
 
                         if gsm[:2] == "31":
                             gsm = "00" + gsm
-
-                    if gsm is None:
-                        gsm = False
 
                     print(customer_info)
 
