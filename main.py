@@ -211,7 +211,7 @@ def my_task(request_data):
                     postcode = customer_info.get("Postcode")
                     gemeente = customer_info.get("GemeenteNaam")
 
-                    if isinstance(email, float) and math.isnan(email):
+                    if isinstance(email, str) and math.isnan(email):
                         email = None  # Set gsm to None or handle it as needed for NaN values
 
                     if isinstance(gsm, float) and math.isnan(gsm):
@@ -241,7 +241,7 @@ def my_task(request_data):
 
                         if gsm[:2] == "31":
                             gsm = "00" + gsm
-
+                    print(customer_info)
                     print(gsm, email, naam, voornaam, straat, postcode, gemeente)
                     # check if the customer already exists
                     if email == "geen@schoonmaakzorg.be" and gsm != None:
