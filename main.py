@@ -383,8 +383,12 @@ def my_task(request_data):
                         continue
                     # add timetracking to customer
                     for timeframe in row.get("Timeframes"):
-                        van = timeframe.get("Van")
-                        tot = timeframe.get("Tot")
+                        van_str = timeframe.get("Van")
+                        tot_str = timeframe.get("Tot")
+
+                        # Convert strings to datetime objects
+                        van = datetime.strptime(van_str, "%Y-%m-%dT%H:%M:%S")
+                        tot = datetime.strptime(tot_str, "%Y-%m-%dT%H:%M:%S")
                         # check if timetracking already exists
                         timetracking = api_session.post(
                             "https://api.focus.teamleader.eu/timeTracking.list",
