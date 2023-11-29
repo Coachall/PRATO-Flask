@@ -213,7 +213,7 @@ def my_task(request_data):
 
                     print(gsm)
 
-                    if isinstance(gsm, float) and math.isnan(gsm):
+                    if math.isnan(gsm) and isinstance(gsm, float):
                         gsm = None  # Set gsm to None or handle it as needed for NaN values
                     else:
                         gsm = str(gsm)
