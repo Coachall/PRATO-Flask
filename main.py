@@ -350,6 +350,42 @@ def my_task(request_data):
                                     ],
                                 },
                             ).json()
+                    elif gsm != None:
+                        customer_by_phone = api_session.post(
+                            "https://api.focus.teamleader.eu/contacts.list",
+                            json={"filter": {"term": gsm}},
+                        ).json()
+                        if customer_by_phone.get("data"):
+                            customer = {
+                                "data": {
+                                    "id": customer_by_phone.get("data")[0].get("id")
+                                }
+                            }
+                        else:
+                            customer = api_session.post(
+                                "https://api.focus.teamleader.eu/contacts.add",
+                                json={
+                                    "first_name": voornaam,
+                                    "last_name": naam,
+                                    "telephones": [{"type": "mobile", "number": gsm}]
+                                    if gsm != None
+                                    else None,
+                                    "addresses": [
+                                        {
+                                            "type": "primary",
+                                            "address": {
+                                                "line_1": straat,
+                                                "postal_code": postcode,
+                                                "city": gemeente,
+                                                "country": "BE",
+                                            },
+                                        }
+                                    ],
+                                    "custom_fields": [
+                                        {"id": user.custom_field_id, "value": id}
+                                    ],
+                                },
+                            ).json()
                     else:
                         rows_with_errors.append(row)
                         continue
