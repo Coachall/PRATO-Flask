@@ -386,8 +386,13 @@ def my_task(request_data):
                         tot_str = timeframe.get("Tot")
 
                         # Convert strings to datetime objects
-                        van = datetime.strptime(van_str, "%d/%m/%Y %H:%M")
-                        tot = datetime.strptime(tot_str, "%d/%m/%Y %H:%M")
+                        if type(van_str) == str:
+                            van = datetime.strptime(van_str, "%d/%m/%Y %H:%M")
+                            tot = datetime.strptime(tot_str, "%d/%m/%Y %H:%M")
+                        else:
+                            van = van_str
+                            tot = tot_str
+
                         # check if timetracking already exists
                         timetracking = api_session.post(
                             "https://api.focus.teamleader.eu/timeTracking.list",
