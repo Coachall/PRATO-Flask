@@ -242,7 +242,10 @@ def my_task(request_data):
                             gsm = "00" + gsm
 
                     # check if the customer already exists
-                    if email == "geen@schoonmaakzorg.be" and gsm != None:
+                    if (
+                        email == "geen@schoonmaakzorg.be"
+                        or email == "dubbel@schoonmaakzorg.be"
+                    ) and gsm is not None:
                         customer_by_phone = api_session.post(
                             "https://api.focus.teamleader.eu/contacts.list",
                             json={"filter": {"term": gsm}},
