@@ -201,12 +201,12 @@ def my_task(request_data):
 
             for row in transformed_list:
                 try:
-                    voornaam = customer_info.get("Kl_Voornaam")
-                    if type(customer_info.get("Kl_Voornaam")) != str:
-                        voornaam = ""
                     customer_info = row.get("CustomerInfo")
                     id = str(customer_info.get("KlantID"))
                     naam = customer_info.get("Kl_Naam")
+                    voornaam = str(customer_info.get("Kl_Voornaam"))
+                    if voornaam == "nan":
+                        voornaam = ""
                     email = customer_info.get("KL_Email")
                     gsm = customer_info.get("KL_GSM")
                     straat = customer_info.get("Straat")
