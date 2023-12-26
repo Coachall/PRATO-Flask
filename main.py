@@ -204,7 +204,7 @@ def my_task(request_data):
                     customer_info = row.get("CustomerInfo")
                     id = str(customer_info.get("KlantID"))
                     naam = customer_info.get("Kl_Naam")
-                    voornaam = customer_info.get("Kl_Voornaam")
+                    voornaam = str(customer_info.get("Kl_Voornaam"))
                     email = customer_info.get("KL_Email")
                     gsm = customer_info.get("KL_GSM")
                     straat = customer_info.get("Straat")
